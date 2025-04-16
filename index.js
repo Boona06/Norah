@@ -46,7 +46,7 @@ app.post('/webhook', async (req, res) => {
     console.log('🎥 Видео үүссэн:', videoUrl);
     return res.status(200).json({ videoUrl });
   } catch (err) {
-    console.error('❌ Алдаа:', err?.response?.data || err.message);
+    console.error('❌ HeyGen API алдаа:', err?.response?.data || err.message)
     return res.status(500).json({ error: 'HeyGen API дуудах үед алдаа гарлаа' });
   }
 });
