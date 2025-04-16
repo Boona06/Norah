@@ -19,7 +19,7 @@ app.post("/webhook", async (req, res) => {
         voice_id: process.env.HEYGEN_VOICE_ID,
         script: {
           type: "text",
-          input: userMessage,
+          input: "userMessage",
         },
         test: true,
       },
