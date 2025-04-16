@@ -1,20 +1,30 @@
-import express from "express";
-import bodyParser from "body-parser";
+import { HeyGen } from 'heygen'; // HeyGen module импортлох
 
-const app = express();
-const port = process.env.PORT || 10000;
-
-// Body parser-ийг тохируулна
-app.use(bodyParser.json());
-
-// /webhook маршрутын тохиргоо
-app.post("/webhook", (req, res) => {
-  const userMessage = req.body.message;
-  console.log("Message received:", userMessage);
-  res.status(200).send("Webhook received successfully");
+const heygen = new HeyGen({
+  apiKey: process.env.HEYGEN_API_KEY, // Таны API key
+  avatarId: process.env.HEYGEN_AVATAR_ID, // Таны Avatar ID
+  voiceId: process.env.HEYGEN_VOICE_ID // Таны Voice ID
 });
 
-// Серверийг ажиллуулах
-app.listen(port, () => {
-  console.log(`Server running on port ${port}`);
+app.post('/webhook', async (req, res) => {
+  const message = req.body.message;
+
+  try {
+    // HeyGen-ээс Avatar-ын хариу авах
+    const avatarResponse = await heygen.createVideo({
+      text: message, // Мессеж
+      avatarId: process.env.HEYGEN_AVATAR_ID, // Avatar ID
+      voiceId: process.env.HEYGEN_VOICE_ID // Voice ID
+    });
+
+    res.status(200).send({
+      message: "Avatar successfully created",
+      videoUrl: avatarResponse.videoUrl // Хариуд видео URL
+    });
+
+    console.log("Avatar response:", avatarResponse); // Лог дээр хариуг харах
+  } catch (error) {
+    console.error("Error creating avatar:", error);
+    res.status(500).send("Failed to create avatar");
+  }
 });
