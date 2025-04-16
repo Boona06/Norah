@@ -1,30 +1,60 @@
-import { HeyGen } from 'heygen'; // HeyGen module импортлох
+// index.js
+import express from 'express';
+import dotenv from 'dotenv';
+import axios from 'axios';
 
-const heygen = new HeyGen({
-  apiKey: process.env.HEYGEN_API_KEY, // Таны API key
-  avatarId: process.env.HEYGEN_AVATAR_ID, // Таны Avatar ID
-  voiceId: process.env.HEYGEN_VOICE_ID // Таны Voice ID
-});
+// .env file доторх хувьсагчдыг ачаалах
+dotenv.config();
+
+const app = express();
+const PORT = process.env.PORT || 10000;
+
+app.use(express.json());
 
 app.post('/webhook', async (req, res) => {
-  const message = req.body.message;
+  const { message } = req.body;
+
+  if (!message) {
+    return res.status(400).json({ error: 'Мессеж ирсэнгүй!' });
+  }
 
   try {
-    // HeyGen-ээс Avatar-ын хариу авах
-    const avatarResponse = await heygen.createVideo({
-      text: message, // Мессеж
-      avatarId: process.env.HEYGEN_AVATAR_ID, // Avatar ID
-      voiceId: process.env.HEYGEN_VOICE_ID // Voice ID
-    });
+    const response = await axios.post(
+      'https://api.heygen.com/v1/video/generate',
+      {
+        script: {
+          type: 'text',
+          input: message
+        },
+        avatar_id: process.env.HEYGEN_AVATAR_ID,
+        voice_id: process.env.HEYGEN_VOICE_ID
+      },
+      {
+        headers: {
+          'Authorization': `Bearer ${process.env.HEYGEN_API_KEY}`,
+          'Content-Type': 'application/json'
+        }
+      }
+    );
 
-    res.status(200).send({
-      message: "Avatar successfully created",
-      videoUrl: avatarResponse.videoUrl // Хариуд видео URL
-    });
+    const videoUrl = response.data?.data?.video_url;
 
-    console.log("Avatar response:", avatarResponse); // Лог дээр хариуг харах
-  } catch (error) {
-    console.error("Error creating avatar:", error);
-    res.status(500).send("Failed to create avatar");
+    if (!videoUrl) {
+      return res.status(500).json({ error: 'Видео линк үүссэнгүй' });
+    }
+
+    console.log('🎥 Видео үүссэн:', videoUrl);
+    return res.status(200).json({ videoUrl });
+  } catch (err) {
+    console.error('❌ Алдаа:', err?.response?.data || err.message);
+    return res.status(500).json({ error: 'HeyGen API дуудах үед алдаа гарлаа' });
   }
+});
+
+app.get('/', (req, res) => {
+  res.send('✅ Norah AI webhook server ажиллаж байна');
+});
+
+app.listen(PORT, () => {
+  console.log(`🚀 Сервер амжилттай ажиллаж байна: http://localhost:${PORT}`);
 });
