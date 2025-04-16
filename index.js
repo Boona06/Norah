@@ -19,15 +19,23 @@ app.post('/webhook', async (req, res) => {
   }
 
   try {
+    console.log('➡️ Хүсэлт илгээж байна:', {
+      message,
+      avatar_id: process.env.HEYGEN_AVATAR_ID,
+      voice_id: process.env.HEYGEN_VOICE_ID,
+    });
+
     const response = await axios.post(
       'https://api.heygen.com/v1/video.create',
       {
-        script: {
-          type: 'text',
-          input: message
-        },
-        avatar_id: process.env.HEYGEN_AVATAR_ID,
-        voice_id: process.env.HEYGEN_VOICE_ID
+        video_inputs: {
+          script: {
+            type: 'text',
+            input: message
+          },
+          avatar_id: process.env.HEYGEN_AVATAR_ID,
+          voice_id: process.env.HEYGEN_VOICE_ID
+        }
       },
       {
         headers: {
@@ -40,13 +48,13 @@ app.post('/webhook', async (req, res) => {
     const videoUrl = response.data?.data?.video_url;
 
     if (!videoUrl) {
-      return res.status(500).json({ error: 'Видео линк үүссэнгүй' });
+      return res.status(500).json({ error: '🎥 Видео линк үүссэнгүй' });
     }
 
-    console.log('🎥 Видео үүссэн:', videoUrl);
+    console.log('✅ Видео үүссэн:', videoUrl);
     return res.status(200).json({ videoUrl });
   } catch (err) {
-    console.error('❌ HeyGen API алдаа:', err?.response?.data || err.message)
+    console.error('❌ HeyGen API алдаа:', err?.response?.data || err.message);
     return res.status(500).json({ error: 'HeyGen API дуудах үед алдаа гарлаа' });
   }
 });
