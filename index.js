@@ -20,7 +20,7 @@ app.post('/webhook', async (req, res) => {
 
   try {
     const response = await axios.post(
-      'https://api.heygen.com/v1/video/generate',
+      'https://api.heygen.com/v1/video.create',
       {
         script: {
           type: 'text',
